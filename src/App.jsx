@@ -137,9 +137,7 @@ const App = () => {
             )}
           </div>
         )}
-        {/* Loader spinner moved for CSS only */}
       </div>
-      {/* Extra CSS for custom classes */}
       
     </div>
   );
