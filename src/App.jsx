@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef , useEffect } from 'react'
+import { UploadIcon, CameraIcon, XIcon } from './Icons';
 import './App.css'
 
 const App = () => {
@@ -6,6 +7,7 @@ const App = () => {
   const [preview, setPreview] = useState('');
   const [predicting, setPredicting] = useState(false);
   const [result, setResult] = useState(null);
+  const [serverReady, setServerReady] = useState(false);
   const fileInputRef = useRef();
 
   const handleImageChange = (e) => {
@@ -20,6 +22,26 @@ const App = () => {
       setResult(null);
     }
   };
+
+  useEffect(() => {
+    const checkServerStatus = async () => {
+      try {
+        const res = await fetch('https://potato-disease-1-ypvi.onrender.com/');
+        if (res.ok) {
+          console.log('Server health check successful:', res.status);
+          setServerReady(true);
+        } else {
+          console.error('Server health check failed with status:', res.status);
+          setServerReady(false);
+        }
+      } catch (error) {
+        console.error('Error during server health check:', error);
+        setServerReady(false);
+      }
+    };
+
+    checkServerStatus();
+  }, []);
 
   const handleRemoveImage = () => {
     setImage(null);
@@ -40,6 +62,7 @@ const App = () => {
       const formData = new FormData();
       formData.append('file', image);
 
+      // Note: Assuming the backend URL is correct. Ensure CORS is handled on the backend.
       const response = await fetch('https://potato-disease-1-ypvi.onrender.com/predict', {
         method: 'POST',
         body: formData
@@ -71,10 +94,16 @@ const App = () => {
       <div className="inner_div">
         <div className="heading_box">
           <h1>
-            <span role="img" aria-label="potato">🥔</span> Potato Disease Detector
+            Potato Disease Detector
           </h1>
-          <div className="subtitle">Diagnose your potato leaf instantly!</div>
+          <div className="subtitle">Diagnose your potato leaf instantly using AI</div>
         </div>
+
+        {!serverReady && (
+          <div className="server_status_message">
+            Server is starting... Please wait a moment.
+          </div>
+        )}
 
         <div className="photoUpload">
           <input
@@ -84,20 +113,23 @@ const App = () => {
             className="hidden_file_input"
             onChange={handleImageChange}
             ref={fileInputRef}
+            disabled={!serverReady}
           />
 
           {!preview ? (
-            <label htmlFor="potato-upload" className="photo_area photo_area_upload custom_upload_area">
-              <div className="upload_content custom_upload_content">
-                <span className="upload_icon custom_upload_icon" role="img" aria-label="upload">📷</span>
-                <span className="photo_area_text custom_upload_text">Upload your photo here</span>
+            <label htmlFor="potato-upload" className={`photo_area photo_area_upload ${!serverReady ? 'disabled' : ''}`}>
+              <div className="upload_content">
+                <span className="upload_icon">
+                  <UploadIcon />
+                </span>
+                <span className="photo_area_text">Click or drag your photo here</span>
               </div>
             </label>
           ) : (
-            <div className="photo_area photo_area_preview custom_preview_area">
-              <img src={preview} alt="uploaded" className="uploaded_image custom_uploaded_image" />
-              <button className="remove_image_btn custom_remove_image_btn" onClick={handleRemoveImage} title="Remove" type="button">
-                ×
+            <div className="photo_area photo_area_preview">
+              <img src={preview} alt="uploaded" className="uploaded_image" />
+              <button className="remove_image_btn" onClick={handleRemoveImage} title="Remove" type="button">
+                <XIcon />
               </button>
             </div>
           )}
@@ -105,40 +137,45 @@ const App = () => {
 
         <div className="predict_btn_wrap">
           <button
-            className="predict_btn custom_predict_btn"
+            className="predict_btn"
             onClick={handlePredict}
-            disabled={!image || predicting}
+            disabled={!image || predicting || !serverReady}
           >
             {predicting ? (
               <>
                 <span className="loader" />
-                <span className="predict_btn_text">Predicting...</span>
+                <span className="predict_btn_text">Analyzing...</span>
               </>
-            ) : <span className="predict_btn_text">Predict</span>}
+            ) : (
+              <>
+                <CameraIcon />
+                <span className="predict_btn_text">Predict Disease</span>
+              </>
+            )}
           </button>
         </div>
 
         {result && (
-          <div className={`result_box ${result.status} custom_result_box`}>
+          <div className={`result_box ${result.status}`}>
             {result.status === "error" ? (
               <strong className="result_error_msg">{result.message}</strong>
             ) : (
               <>
-                <div className="result_disease custom_result_disease">
-                  {result.disease}{" "}
+                <div className="result_disease">
+                  {result.disease}
                   {result.confidence && (
-                    <span className="result_confidence custom_result_confidence">
-                      ({result.confidence})
+                    <span className="result_confidence">
+                      {result.confidence}
                     </span>
                   )}
                 </div>
-                <div className="result_advice custom_result_advice">{result.advice}</div>
+                <div className="result_advice">{result.advice}</div>
               </>
             )}
           </div>
         )}
       </div>
-      
+
     </div>
   );
 }
