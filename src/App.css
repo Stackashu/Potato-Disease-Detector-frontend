@@ -107,10 +107,24 @@
   color: var(--text-dim);
 }
 
-.upload_icon {
-  font-size: 3rem;
+.upload_icons_wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 1rem;
-  display: block;
+}
+
+.upload_icons_wrapper svg {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1.5;
+  color: var(--text-dim);
+  transition: color 0.3s ease;
+}
+
+.photo_area:hover .upload_icons_wrapper svg {
+  color: var(--primary-color);
 }
 
 .photo_area_text {

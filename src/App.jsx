@@ -1,4 +1,4 @@
-import React, { useState, useRef , useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { UploadIcon, CameraIcon, XIcon } from './Icons';
 import './App.css'
 
@@ -113,16 +113,17 @@ const App = () => {
             className="hidden_file_input"
             onChange={handleImageChange}
             ref={fileInputRef}
-            disabled={!serverReady}
+            ref={fileInputRef}
           />
 
           {!preview ? (
-            <label htmlFor="potato-upload" className={`photo_area photo_area_upload ${!serverReady ? 'disabled' : ''}`}>
+            <label htmlFor="potato-upload" className="photo_area photo_area_upload">
               <div className="upload_content">
-                <span className="upload_icon">
+                <span className="upload_icons_wrapper">
                   <UploadIcon />
+                  <CameraIcon />
                 </span>
-                <span className="photo_area_text">Click or drag your photo here</span>
+                <span className="photo_area_text">Take a photo or upload</span>
               </div>
             </label>
           ) : (
